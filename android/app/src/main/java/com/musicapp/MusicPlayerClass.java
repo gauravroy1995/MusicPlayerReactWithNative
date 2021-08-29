@@ -118,9 +118,9 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void playSong() throws IOException {
+    public void playSong(Integer position) throws IOException {
         try{
-            Uri uri = Uri.parse(mysongs.get(0).toString());
+            Uri uri = Uri.parse(mysongs.get(position).toString());
             MediaPlayer mediaPlayer = MediaPlayer.create(reactContext,uri);
             mediaPlayer.start();
 

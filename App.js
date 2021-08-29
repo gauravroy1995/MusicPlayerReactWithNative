@@ -6,8 +6,7 @@
  * @flow strict-local
  */
 
-import { transformFileAsync } from '@babel/core';
-import React from 'react';
+import React,{useState} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -17,16 +16,11 @@ import {
   useColorScheme,
   View,
   NativeModules,
-  TouchableOpacity
+  TouchableOpacity,
+  FlatList
 } from 'react-native';
 
-const onPress = async() => {
-  const {MusicPlayerModule} = NativeModules
- const result = await MusicPlayerModule.createMusicEvent("yahh","yyaya");
 
- console.log("ress",result);
-
-}
 
 const onPressOfPermsiion = async() => {
   const {MusicPlayerModule} = NativeModules
@@ -36,12 +30,62 @@ const onPressOfPermsiion = async() => {
 
 const onPressplay = () => {
   const {MusicPlayerModule} = NativeModules
- const result =  MusicPlayerModule.playSong();
+ const result =  MusicPlayerModule.playSong(0);
 //  console.log(result,"result of permission");
 }
 
+
 const App = () => {
 
+  const [songs,setSongs] = useState([]);
+
+  const onPress = async() => {
+    const {MusicPlayerModule} = NativeModules
+
+   const result = await MusicPlayerModule.createMusicEvent("yahh","yyaya");
+  
+   const songsArr = [];
+
+   const resultKeys = Object.keys(result);
+
+   for(let i=0;i<resultKeys.length;i++){
+     const songsObj = result[`${i}`];
+     songsArr.push(songsObj)
+   }
+
+   setSongs(songsArr);
+
+   console.log("ress",result);
+  
+  }
+
+  const renderFlatList = () => {
+    return(
+      <FlatList 
+      data={songs}
+      renderItem={renderItem}
+      />
+    )
+  }
+
+  const renderItem = ({item,index}) => {
+    return(
+      <TouchableOpacity 
+      onPress={() => onPressOfEachRow(index)}
+      >
+        <Text>{item}</Text>
+      </TouchableOpacity>
+    )
+  }
+
+
+  const onPressOfEachRow = (index) => {
+    const {MusicPlayerModule} = NativeModules
+    const result =  MusicPlayerModule.playSong(index);
+  }
+
+
+  
 
   return (
     <SafeAreaView style={{flex:1,alignItems:'center',justifyContent:'center'}}>
@@ -62,6 +106,8 @@ const App = () => {
       >
         <Text>Play song</Text>
       </TouchableOpacity>
+
+      {renderFlatList()}
     </SafeAreaView>
   );
 };
