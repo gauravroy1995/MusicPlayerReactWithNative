@@ -34,6 +34,12 @@ const onPressplay = () => {
 //  console.log(result,"result of permission");
 }
 
+const onPressPause = () => {
+  const {MusicPlayerModule} = NativeModules
+ const result =  MusicPlayerModule.pauseSong();
+//  console.log(result,"result of permission");
+}
+
 
 const App = () => {
 
@@ -89,6 +95,7 @@ const App = () => {
 
   return (
     <SafeAreaView style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+      <View style={{flexDirection:'row', flexWrap:'wrap'}} >
       <TouchableOpacity onPress={onPress}
       style={styles.sectionContainer}
       >
@@ -106,6 +113,13 @@ const App = () => {
       >
         <Text>Play song</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={onPressPause}
+       style={styles.sectionContainer}
+      >
+        <Text>Pause/Resume song</Text>
+      </TouchableOpacity>
+      </View>
 
       {renderFlatList()}
     </SafeAreaView>

@@ -36,6 +36,8 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
 
     private String[] items;
 
+    MediaPlayer mediaPlayer;
+
     MusicPlayerClass(ReactApplicationContext context) {
         super(context);
         reactContext = context;
@@ -121,8 +123,33 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
     public void playSong(Integer position) throws IOException {
         try{
             Uri uri = Uri.parse(mysongs.get(position).toString());
-            MediaPlayer mediaPlayer = MediaPlayer.create(reactContext,uri);
+            mediaPlayer = MediaPlayer.create(reactContext,uri);
             mediaPlayer.start();
+
+        } catch (Exception error){
+            throw error;
+        }
+
+
+
+    }
+
+    @ReactMethod
+    public void pauseSong() throws IOException {
+
+        Log.d("pause","paused");
+        try{
+         if(mediaPlayer != null){
+             if(mediaPlayer.isPlaying()){
+                 Log.d("is playing","yes");
+                 mediaPlayer.pause();
+             }else{
+                 Log.d("is not playing","yes");
+                 mediaPlayer.start();
+             }
+
+
+         }
 
         } catch (Exception error){
             throw error;
