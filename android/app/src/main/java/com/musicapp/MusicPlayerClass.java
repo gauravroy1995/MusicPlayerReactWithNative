@@ -135,6 +135,21 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void stopSong() throws IOException {
+        try{
+          if(mediaPlayer != null){
+//              mediaPlayer.release();
+              mediaPlayer.stop();
+          }
+        } catch (Exception error){
+            throw error;
+        }
+
+
+
+    }
+
+    @ReactMethod
     public void pauseSong() throws IOException {
 
         Log.d("pause","paused");
