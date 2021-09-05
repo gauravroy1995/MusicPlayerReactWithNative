@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  Button,
 } from 'react-native';
 import {Bar} from 'react-native-progress';
 
@@ -25,9 +26,39 @@ const MusicPlayer = props => {
   const [isPaused, setIsPaused] = useState(false);
   const countRef = useRef(null);
 
+  React.useLayoutEffect(() => {
+    props.navigation.setOptions({
+      headerLeft: () => (
+        <Button
+          onPress={() => {
+            onPressStop();
+            onBackPress();
+          }}
+          title="Back"
+        />
+      ),
+    });
+  }, [props.navigation]);
+
+  const onBackPress = () => {
+    clearInterval(countRef.current);
+    props.navigation.goBack();
+  };
+
+  const onPressStop = () => {
+    const {MusicPlayerModule} = NativeModules;
+    const result = MusicPlayerModule.stopSong();
+    //  console.log(result,"result of permission");
+  };
+
   useEffect(() => {
     // Your code here
     handleStart();
+
+    return () => {
+      onPressStop();
+      clearInterval(countRef.current);
+    };
   }, []);
 
   const handleStart = () => {
