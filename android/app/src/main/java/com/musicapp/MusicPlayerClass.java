@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -120,11 +121,19 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void playSong(Integer position) throws IOException {
+    public void playSong(Integer position, Promise promise) throws IOException {
         try{
+            if(mediaPlayer!=null && mediaPlayer.isPlaying()){
+                mediaPlayer.stop();
+            }
             Uri uri = Uri.parse(mysongs.get(position).toString());
             mediaPlayer = MediaPlayer.create(reactContext,uri);
             mediaPlayer.start();
+
+            // return duration
+           promise.resolve(mediaPlayer.getDuration());
+
+
 
         } catch (Exception error){
             throw error;
