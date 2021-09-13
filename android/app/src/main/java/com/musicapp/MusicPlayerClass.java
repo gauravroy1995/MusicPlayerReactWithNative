@@ -1,8 +1,14 @@
 package com.musicapp;
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -52,71 +58,84 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void createMusicEvent(String name, String location, Promise promise) {
+        final Activity activity = getCurrentActivity();
 
-        mysongs = findSong(Environment.getExternalStorageDirectory());
-
-         items = new String[mysongs.size()];
-
-        WritableMap map = Arguments.createMap();
-
-
-
-        for(int i =0; i< mysongs.size();i++){
-            items[i] = mysongs.get(i).getName().toString();
-//            mysongs.get(i).
-            map.putString(String.valueOf(i),  mysongs.get(i).getName().toString());
-            Log.d("here",mysongs.get(i).getPath().toString());
-        }
-
-        promise.resolve(map);
-
-        Log.d("works","yahhh");
-    }
-
-
-    ArrayList<HashMap<String,String>> getPlayList(String rootPath) {
-        ArrayList<HashMap<String,String>> fileList = new ArrayList<>();
-
-
-        try {
-            File rootFolder = new File(rootPath);
-            File[] files = rootFolder.listFiles(); //here you will get NPE if directory doesn't contains  any file,handle it like this.
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    if (getPlayList(file.getAbsolutePath()) != null) {
-                        fileList.addAll(getPlayList(file.getAbsolutePath()));
-                    } else {
-                        break;
-                    }
-                } else if (file.getName().endsWith(".mp3")) {
-                    HashMap<String, String> song = new HashMap<>();
-                    song.put("file_path", file.getAbsolutePath());
-                    song.put("file_name", file.getName());
-                    fileList.add(song);
+        AsyncTask<Void,Void,Void> newAsyncTask = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                mysongs = findSong(Environment.getExternalStorageDirectory());
+//                Log.d("length",mysongs.get(0).getName());
+                if(mysongs == null){
+                    promise.resolve(null);
+                    return null;
                 }
-            }
-            return fileList;
-        } catch (Exception e) {
-            return null;
-        }
+                items = new String[mysongs.size()];
+
+                WritableMap map = Arguments.createMap();
+
+
+
+                for(int i =0; i< mysongs.size();i++){
+                    items[i] = mysongs.get(i).getName().toString();
+                    map.putString(String.valueOf(i),  mysongs.get(i).getName().toString());
+//                    Log.d("here",mysongs.get(i).getPath().toString());
+                }
+
+                promise.resolve(map);
+                return null;
+            };
+        };
+
+
+
+        newAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        Log.d("works","yahhh");
+
+
     }
+
+
 
     public ArrayList<File> findSong (File file){
         ArrayList<File> arrayList  = new ArrayList<>();
 
-        File[] files = file.listFiles();
+        try{
+            File[] files = file.listFiles();
 
-        for(File singleFile:files){
-            if(singleFile.isDirectory() && !singleFile.isHidden()){
-                arrayList.addAll(findSong(singleFile));
+            // if files return null then return from the loop
+            if (files == null) {
+                return arrayList;
+            }
 
-            }else{
-                if(singleFile.getName().endsWith(".mp3")){
-                    arrayList.add(singleFile);
+            // check for every file
+            for(File singleFile:files){
+
+                // if its directory again recursively call this func
+                if(singleFile.isDirectory() && !singleFile.isHidden()){
+                    if(singleFile.getAbsolutePath() != null){
+                        arrayList.addAll(findSong(singleFile));
+                    } else {
+                        break;
+                    }
+                }else{
+                    // else add file into array
+                    if(singleFile.isFile()){
+                        if(singleFile.getName().endsWith(".mp3")){
+                            arrayList.add(singleFile);
+                        }
+                    }
+
                 }
             }
+            return arrayList;
+
+        } catch(Exception e){
+            Log.e("err",e.toString());
+            return  null;
         }
-        return arrayList;
+
+
+
     };
 
 
@@ -203,4 +222,5 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
             }
         }).check();
     }
+
 }
