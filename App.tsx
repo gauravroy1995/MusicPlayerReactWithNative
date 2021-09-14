@@ -20,7 +20,7 @@ import {
   FlatList,
 } from 'react-native';
 
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, DarkTheme} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 import Home from './src/Home';
@@ -30,10 +30,18 @@ const App = () => {
   const Stack = createNativeStackNavigator();
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={DarkTheme}>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="MusicPlayer" component={MusicPlayer} />
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{title: 'Home', headerShadowVisible: true}}
+        />
+        <Stack.Screen
+          name="MusicPlayer"
+          component={MusicPlayer}
+          options={{headerBackVisible: true}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

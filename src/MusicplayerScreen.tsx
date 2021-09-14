@@ -27,19 +27,19 @@ const MusicPlayer = props => {
   const [isPaused, setIsPaused] = useState(false);
   const countRef = useRef(null);
 
-  React.useLayoutEffect(() => {
-    props.navigation.setOptions({
-      headerLeft: () => (
-        <Button
-          onPress={() => {
-            onPressStop();
-            onBackPress();
-          }}
-          title="Back"
-        />
-      ),
-    });
-  }, [props.navigation]);
+  // React.useLayoutEffect(() => {
+  //   props.navigation.setOptions({
+  //     headerLeft: () => (
+  //       <Button
+  //         onPress={() => {
+  //           onPressStop();
+  //           onBackPress();
+  //         }}
+  //         title="Back"
+  //       />
+  //     ),
+  //   });
+  // }, [props.navigation]);
 
   const onBackPress = () => {
     clearInterval(countRef.current);
@@ -143,7 +143,6 @@ const MusicPlayer = props => {
 const styles = StyleSheet.create({
   mainType: {
     flex: 1,
-    backgroundColor: '#95a888',
     // justifyContent: 'center',
     // alignItems: 'center',
   },
@@ -163,7 +162,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginVertical: 50,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: '#fff',
     shadowOffset: {
       width: 0,
       height: 4,
@@ -178,7 +177,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     fontSize: 14,
     fontWeight: '700',
-    color: '#062d47',
+    color: '#FF5733',
   },
   textSty2: {
     textAlign: 'center',

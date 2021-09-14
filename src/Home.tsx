@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
@@ -6,7 +8,7 @@
  * @flow strict-local
  */
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -15,13 +17,9 @@ import {
   NativeModules,
   TouchableOpacity,
   FlatList,
+  Button,
+  ActivityIndicator,
 } from 'react-native';
-
-const onPressOfPermsiion = async () => {
-  const {MusicPlayerModule} = NativeModules;
-  const result = await MusicPlayerModule.getPermission();
-  console.log(result, 'result of permission');
-};
 
 const onPressplay = () => {
   const {MusicPlayerModule} = NativeModules;
@@ -44,8 +42,18 @@ const onPressStop = () => {
 const Home = props => {
   const [songs, setSongs] = useState([]);
 
-  const onPress = async () => {
+  const [isLoading, setLoading] = useState(false);
+
+  const [isFilePermission, setFilePermission] = useState(false);
+
+  useEffect(() => {
+    onPressOfPermsiion();
+  }, []);
+
+  const getAllSongs = async () => {
     const {MusicPlayerModule} = NativeModules;
+
+    setLoading(true);
 
     const result = await MusicPlayerModule.createMusicEvent('yahh', 'yyaya');
 
@@ -60,17 +68,48 @@ const Home = props => {
 
     setSongs(songsArr);
 
+    setLoading(false);
+
     console.log('ress', result);
   };
 
+  const onPressOfPermsiion = async () => {
+    const {MusicPlayerModule} = NativeModules;
+    const result = await MusicPlayerModule.getPermission();
+
+    setFilePermission(result);
+    if (result) {
+      getAllSongs();
+    }
+    // console.log(result, 'result of permission');
+  };
+
+  const renderListHeader = () => {
+    return (
+      <View>
+        <Text style={styles.listHead}>Your songs (tap to play)</Text>
+      </View>
+    );
+  };
+
   const renderFlatList = () => {
-    return <FlatList data={songs} renderItem={renderItem} />;
+    return (
+      <FlatList
+        data={songs}
+        renderItem={renderItem}
+        ListHeaderComponent={renderListHeader}
+      />
+    );
   };
 
   const renderItem = ({item, index}) => {
     return (
-      <TouchableOpacity onPress={() => onPressOfEachRow(index)}>
-        <Text>{item}</Text>
+      <TouchableOpacity
+        style={styles.eachSongWrap}
+        onPress={() => onPressOfEachRow(index)}>
+        <Text style={styles.textWs} numberOfLines={1}>
+          {item}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -89,34 +128,26 @@ const Home = props => {
     return props.navigation.navigate('MusicPlayer', params);
   };
 
+  const renderLoader = () => {
+    return <ActivityIndicator color="#FF5733" size="large" />;
+  };
+
+  const renderStorageButton = () => {
+    return (
+      <Button
+        title="Enable storage permission"
+        onPress={onPressOfPermsiion}
+        color="purple"
+        disabled={isFilePermission}
+      />
+    );
+  };
+
   return (
     <SafeAreaView
       style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-      <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-        <TouchableOpacity onPress={onPress} style={styles.sectionContainer}>
-          <Text>Press here</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={onPressOfPermsiion}
-          style={styles.sectionContainer}>
-          <Text>Press permisison</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={onPressplay} style={styles.sectionContainer}>
-          <Text>Play song</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={onPressPause}
-          style={styles.sectionContainer}>
-          <Text>Pause/Resume song</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onPressStop} style={styles.sectionContainer}>
-          <Text>Stop</Text>
-        </TouchableOpacity>
-      </View>
-
+      {isFilePermission ? null : renderStorageButton()}
+      {isLoading ? renderLoader() : null}
       {renderFlatList()}
     </SafeAreaView>
   );
@@ -138,6 +169,29 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  eachSongWrap: {
+    flexDirection: 'row',
+    padding: 10,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginVertical: 5,
+    backgroundColor: '#023020',
+    borderColor: '#A9A9A9',
+  },
+  textWs: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6082B6',
+  },
+
+  listHead: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#DAF7A6',
+    marginLeft: 20,
+    marginBottom: 20,
+    marginTop: 20,
   },
 });
 

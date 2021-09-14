@@ -207,13 +207,13 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
         Dexter.withContext(reactContext.getApplicationContext()).withPermission(Manifest.permission.READ_EXTERNAL_STORAGE).withListener(new PermissionListener() {
             @Override
             public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
-                promise.resolve("Permission granted");
+                promise.resolve(true);
         Log.d("permission","granted");
             }
 
             @Override
             public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
-
+            promise.resolve(false);
             }
 
             @Override
