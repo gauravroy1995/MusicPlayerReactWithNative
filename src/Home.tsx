@@ -85,6 +85,10 @@ const Home = props => {
   };
 
   const renderListHeader = () => {
+    if (isLoading || !songs.length) {
+      return null;
+    }
+
     return (
       <View>
         <Text style={styles.listHead}>Your songs (tap to play)</Text>
@@ -123,6 +127,7 @@ const Home = props => {
       songs: songs,
       songName: songs[index],
       duration: resultDuration,
+      index: index,
     };
     console.log(resultDuration, 'resultt');
     return props.navigation.navigate('MusicPlayer', params);

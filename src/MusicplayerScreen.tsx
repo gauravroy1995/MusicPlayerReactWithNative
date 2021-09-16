@@ -19,12 +19,18 @@ import {Bar} from 'react-native-progress';
 
 const MusicPlayer = props => {
   const {params} = props?.route ?? {};
-  const songName = params?.songName ?? 'yes';
+  // con params?.songName ?? 'yes';st songName =
   const duration = params?.duration ?? 0;
+  // const indexOfSong = params?.index ?? 0;
+  const songList = params?.songs ?? [];
 
   const [timer, setTimer] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [indexOfSong, setSongindex] = useState(params?.index ?? 0);
+  const [durationOfSong, setDurationOfSong] = useState(duration);
+  const [songName, setSongName] = useState(params?.songName ?? 'yes');
+
   const countRef = useRef(null);
 
   // React.useLayoutEffect(() => {
@@ -101,12 +107,39 @@ const MusicPlayer = props => {
     setTimer(0);
   };
 
-  const momentTime = moment.utc(duration).format('mm:ss');
+  const momentTime = moment.utc(durationOfSong).format('mm:ss');
 
-  const progressOfBar = timer / (duration / 1000) ?? 0;
-  console.log(progressOfBar, timer, duration, 'commm');
+  const progressOfBar = timer / (durationOfSong / 1000) ?? 0;
+  // console.log(progressOfBar, timer, duration, 'commm');
 
   const pauseText = isPaused ? 'Pause' : 'Resume';
+
+  const isLastSong = indexOfSong === songList.length - 1;
+
+  const onNextPressOfSong = async () => {
+    if (isLastSong) {
+      return null;
+    }
+
+    onPressStop();
+    clearInterval(countRef.current);
+    setTimer(0);
+
+    const newIndex = indexOfSong + 1;
+
+    setSongindex(newIndex);
+
+    const {MusicPlayerModule} = NativeModules;
+
+    const resultDuration = await MusicPlayerModule.playSong(newIndex);
+
+    setSongName(songList[newIndex]);
+
+    setDurationOfSong(resultDuration);
+
+    handleStart();
+  };
+
   return (
     <View style={styles.mainType}>
       <View style={styles.musicW}>
@@ -119,13 +152,13 @@ const MusicPlayer = props => {
       <View style={styles.muiscTime}>
         <Bar
           style={{overflow: 'hidden', height: 5}}
-          width={Dimensions.get('window').width - 100}
+          width={Dimensions.get('window').width - 40}
           height={5}
           progress={progressOfBar}
           useNativeDriver={true}
           color={'#842df7'}
         />
-        <Text style={styles.textSty2}>{momentTime}</Text>
+        <Text style={styles.textSty2}>Duration: {momentTime}</Text>
       </View>
       <View style={styles.wras}>
         <Text style={styles.prevText} onPress={onPauseResume}>
@@ -134,7 +167,13 @@ const MusicPlayer = props => {
         <Text style={styles.pauseTex} onPress={onPauseResume}>
           {pauseText}
         </Text>
-        <Text style={styles.prevText}>Next</Text>
+        {!isLastSong ? (
+          <Text onPress={onNextPressOfSong} style={styles.prevText}>
+            Next
+          </Text>
+        ) : (
+          <View />
+        )}
       </View>
     </View>
   );
@@ -147,7 +186,7 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
   },
   muiscTime: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     marginTop: 40,
     marginHorizontal: 20,
     alignItems: 'center',
@@ -181,23 +220,24 @@ const styles = StyleSheet.create({
   },
   textSty2: {
     textAlign: 'center',
-    marginLeft: 20,
+    // marginLeft: 20,
     fontSize: 12,
     fontWeight: '700',
-    color: '#062d47',
+    color: '#BA4635',
+    marginTop: 20,
   },
   prevText: {
     textAlign: 'center',
-    marginLeft: 20,
-    fontSize: 12,
+    // marginLeft: 20,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#062d47',
+    color: '#2995BB',
   },
   pauseTex: {
     textAlign: 'center',
-    marginLeft: 20,
-    fontSize: 12,
-    fontWeight: '700',
+
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#2c8a45',
   },
   wras: {
@@ -205,6 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 20,
     marginTop: 30,
+    alignItems: 'center',
   },
 });
 
