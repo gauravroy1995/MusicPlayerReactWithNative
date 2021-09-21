@@ -58,10 +58,16 @@ const MusicPlayer = props => {
     //  console.log(result,"result of permission");
   };
 
+  const getVolumeLevel = async () => {
+    const {MusicPlayerModule} = NativeModules;
+    const result = await MusicPlayerModule.getCurrentVolume();
+    console.log(result, 'resss of volume');
+  };
+
   useEffect(() => {
     // Your code here
     handleStart();
-
+    getVolumeLevel();
     return () => {
       onPressStop();
       clearInterval(countRef.current);
@@ -107,6 +113,13 @@ const MusicPlayer = props => {
     setTimer(0);
   };
 
+  const increaseVolume = async () => {
+    const {MusicPlayerModule} = NativeModules;
+    const result = await MusicPlayerModule.increaseVolume();
+
+    console.log(result, 'resul of increase');
+  };
+
   const momentTime = moment.utc(durationOfSong).format('mm:ss');
 
   const progressOfBar = timer / (durationOfSong / 1000) ?? 0;
@@ -140,6 +153,30 @@ const MusicPlayer = props => {
     handleStart();
   };
 
+  const onPrevioustPressOfSong = async () => {
+    if (indexOfSong === 0) {
+      return null;
+    }
+
+    onPressStop();
+    clearInterval(countRef.current);
+    setTimer(0);
+
+    const newIndex = indexOfSong - 1;
+
+    setSongindex(newIndex);
+
+    const {MusicPlayerModule} = NativeModules;
+
+    const resultDuration = await MusicPlayerModule.playSong(newIndex);
+
+    setSongName(songList[newIndex]);
+
+    setDurationOfSong(resultDuration);
+
+    handleStart();
+  };
+
   return (
     <View style={styles.mainType}>
       <View style={styles.musicW}>
@@ -147,6 +184,11 @@ const MusicPlayer = props => {
           source={{uri: 'https://source.unsplash.com/featured/?music'}}
           style={styles.musicWrap}
         />
+        <Text style={styles.prevText} onPress={increaseVolume}>
+          Increase volume
+        </Text>
+
+        <Text style={styles.prevText}>DEcrease volume</Text>
       </View>
       <Text style={styles.textSty}>{songName}</Text>
       <View style={styles.muiscTime}>
@@ -161,7 +203,7 @@ const MusicPlayer = props => {
         <Text style={styles.textSty2}>Duration: {momentTime}</Text>
       </View>
       <View style={styles.wras}>
-        <Text style={styles.prevText} onPress={onPauseResume}>
+        <Text style={styles.prevText} onPress={onPrevioustPressOfSong}>
           Previous
         </Text>
         <Text style={styles.pauseTex} onPress={onPauseResume}>

@@ -3,7 +3,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -200,6 +202,35 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
 
 
 
+    }
+
+    @ReactMethod
+    public void getCurrentVolume(Promise promise){
+        AudioManager audioManager = (AudioManager) reactContext.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        int volume_level = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        Log.d("volume",String.valueOf(volume_level));
+        promise.resolve(volume_level);
+    }
+
+
+    @ReactMethod
+    public void increaseVolume(Promise promise){
+        AudioManager audioManager = (AudioManager) reactContext.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        audioManager.adjustVolume(AudioManager.ADJUST_RAISE,AudioManager.FLAG_PLAY_SOUND);
+
+        int volume_level = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+//        Log.d("volume",String.valueOf(volume_level));
+        promise.resolve(volume_level);
+    }
+
+    @ReactMethod
+    public void decreaseVolume(Promise promise){
+        AudioManager audioManager = (AudioManager) reactContext.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        audioManager.adjustVolume(AudioManager.ADJUST_LOWER,AudioManager.FLAG_PLAY_SOUND);
+
+        int volume_level = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+//        Log.d("volume",String.valueOf(volume_level));
+        promise.resolve(volume_level);
     }
 
     @ReactMethod
