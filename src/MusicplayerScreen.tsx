@@ -30,6 +30,8 @@ const MusicPlayer = props => {
   const [indexOfSong, setSongindex] = useState(params?.index ?? 0);
   const [durationOfSong, setDurationOfSong] = useState(duration);
   const [songName, setSongName] = useState(params?.songName ?? 'yes');
+  const [maxVolume, setMaxVolume] = useState(1);
+  const [currentVolume, setCurrentvolume] = useState(0);
 
   const countRef = useRef(null);
 
@@ -60,8 +62,16 @@ const MusicPlayer = props => {
 
   const getVolumeLevel = async () => {
     const {MusicPlayerModule} = NativeModules;
-    const result = await MusicPlayerModule.getCurrentVolume();
-    console.log(result, 'resss of volume');
+    const allPromise = Promise.all([
+      MusicPlayerModule.getCurrentVolume(),
+      MusicPlayerModule.getMaxVolume(),
+    ]);
+    const [currentVolume, maxVolume] = await allPromise;
+    // console.log(currentVolume, maxVolume, 'dadada');
+    setMaxVolume(maxVolume);
+    setCurrentvolume(currentVolume);
+
+    // console.log(result, 'resss of volume');
   };
 
   useEffect(() => {
@@ -116,8 +126,8 @@ const MusicPlayer = props => {
   const increaseVolume = async () => {
     const {MusicPlayerModule} = NativeModules;
     const result = await MusicPlayerModule.increaseVolume();
-
-    console.log(result, 'resul of increase');
+    setCurrentvolume(result);
+    // console.log(result, 'resul of increase');
   };
 
   const momentTime = moment.utc(durationOfSong).format('mm:ss');
@@ -177,6 +187,17 @@ const MusicPlayer = props => {
     handleStart();
   };
 
+  const computeVolumePercent = () => {
+    // console.log('hhh');
+    return currentVolume / maxVolume;
+  };
+
+  const decreaseVolume = async () => {
+    const {MusicPlayerModule} = NativeModules;
+    const result = await MusicPlayerModule.decreaseVolume();
+    setCurrentvolume(result);
+  };
+
   return (
     <View style={styles.mainType}>
       <View style={styles.musicW}>
@@ -184,11 +205,26 @@ const MusicPlayer = props => {
           source={{uri: 'https://source.unsplash.com/featured/?music'}}
           style={styles.musicWrap}
         />
-        <Text style={styles.prevText} onPress={increaseVolume}>
-          Increase volume
-        </Text>
+        <View style={styles.ebads}>
+          <Bar
+            style={{transform: [{rotate: '-90deg'}]}}
+            // style={{overflow: 'hidden', height: 5}}
+            width={100}
+            height={20}
+            progress={computeVolumePercent()}
+            useNativeDriver={true}
+            color={'#842df7'}
+          />
+          <View>
+            <Text style={styles.prevText} onPress={increaseVolume}>
+              + vol
+            </Text>
 
-        <Text style={styles.prevText}>DEcrease volume</Text>
+            <Text style={styles.prevText} onPress={decreaseVolume}>
+              - vol
+            </Text>
+          </View>
+        </View>
       </View>
       <Text style={styles.textSty}>{songName}</Text>
       <View style={styles.muiscTime}>
@@ -236,8 +272,14 @@ const styles = StyleSheet.create({
   },
   musicWrap: {
     height: 200,
-    width: '100%',
+    width: 150,
     borderRadius: 20,
+  },
+  ebads: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    flexDirection: 'row',
   },
   musicW: {
     marginHorizontal: 20,
@@ -252,6 +294,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
 
     elevation: 14,
+    flexDirection: 'row',
   },
   textSty: {
     textAlign: 'center',
@@ -274,6 +317,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#2995BB',
+    marginVertical: 20,
   },
   pauseTex: {
     textAlign: 'center',

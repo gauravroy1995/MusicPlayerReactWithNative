@@ -212,6 +212,14 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
         promise.resolve(volume_level);
     }
 
+    @ReactMethod
+    public void getMaxVolume(Promise promise){
+        AudioManager audioManager = (AudioManager) reactContext.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        int volume_level = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+//        Log.d("volume",String.valueOf(volume_level));
+        promise.resolve(volume_level);
+    }
+
 
     @ReactMethod
     public void increaseVolume(Promise promise){
@@ -245,10 +253,13 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
             @Override
             public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
             promise.resolve(false);
+                Log.d("permission","denied");
             }
 
             @Override
             public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+                permissionToken.continuePermissionRequest();
+                Log.d("permission","should");
 
             }
         }).check();
