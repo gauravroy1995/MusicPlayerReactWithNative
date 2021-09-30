@@ -2,8 +2,11 @@ package com.musicapp;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -50,6 +53,9 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
     MusicPlayerClass(ReactApplicationContext context) {
         super(context);
         reactContext = context;
+        MusicIntentReciever myReciever = new MusicIntentReciever();
+        IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+        reactContext.registerReceiver(myReciever,filter);
     }
 
     @NonNull
@@ -263,6 +269,24 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
 
             }
         }).check();
+    }
+
+    // to handle headphones unplug pause
+    public class MusicIntentReciever extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(
+                    android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)) {
+                // signal your service to stop playback
+                // (via an Intent, for instance)
+                if(mediaPlayer.isPlaying()){
+                    mediaPlayer.pause();
+                }
+
+                Log.d("noisy","headpphones unplugged");
+            }
+        }
     }
 
 }
