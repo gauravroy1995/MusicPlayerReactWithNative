@@ -1,21 +1,16 @@
 import moment from 'moment';
 import React, {useState, useRef, useEffect} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
   NativeModules,
-  TouchableOpacity,
-  FlatList,
   Image,
-  Button,
   Dimensions,
+  NativeEventEmitter,
 } from 'react-native';
 import {Bar} from 'react-native-progress';
+import BackgroundTimer from 'react-native-background-timer';
 
 const MusicPlayer = props => {
   const {params} = props?.route ?? {};
@@ -35,6 +30,8 @@ const MusicPlayer = props => {
 
   const countRef = useRef(null);
 
+  const songRef = useRef(null);
+
   // React.useLayoutEffect(() => {
   //   props.navigation.setOptions({
   //     headerLeft: () => (
@@ -50,7 +47,7 @@ const MusicPlayer = props => {
   // }, [props.navigation]);
 
   const onBackPress = () => {
-    clearInterval(countRef.current);
+    BackgroundTimer.clearInterval(countRef.current);
     props.navigation.goBack();
   };
 
@@ -78,16 +75,29 @@ const MusicPlayer = props => {
     // Your code here
     handleStart();
     getVolumeLevel();
+    setEventlisteneronSongEnd();
     return () => {
       onPressStop();
-      clearInterval(countRef.current);
+      BackgroundTimer.clearInterval(countRef.current);
+      songRef.current.remove();
     };
   }, []);
+
+  const setEventlisteneronSongEnd = () => {
+    const eventEmitter = new NativeEventEmitter(
+      NativeModules.MusicPlayerModule,
+    );
+    songRef.current = eventEmitter.addListener('Musicended', event => {
+      // console.log(event.eventProperty) // "someValue"
+      console.log('here music stopped');
+      onNextPressOfSong();
+    });
+  };
 
   const handleStart = () => {
     setIsActive(true);
     setIsPaused(true);
-    countRef.current = setInterval(() => {
+    countRef.current = BackgroundTimer.setInterval(() => {
       setTimer(timer => timer + 1);
     }, 1000);
   };
@@ -101,7 +111,7 @@ const MusicPlayer = props => {
   };
 
   const handlePause = () => {
-    clearInterval(countRef.current);
+    BackgroundTimer.clearInterval(countRef.current);
     setIsPaused(false);
     const {MusicPlayerModule} = NativeModules;
     const result = MusicPlayerModule.pauseSong();
@@ -111,13 +121,13 @@ const MusicPlayer = props => {
     const {MusicPlayerModule} = NativeModules;
     const result = MusicPlayerModule.pauseSong();
     setIsPaused(true);
-    countRef.current = setInterval(() => {
+    countRef.current = BackgroundTimer.setInterval(() => {
       setTimer(timer => timer + 1);
     }, 1000);
   };
 
   const handleReset = () => {
-    clearInterval(countRef.current);
+    BackgroundTimer.clearInterval(countRef.current);
     setIsActive(false);
     setIsPaused(false);
     setTimer(0);
@@ -145,7 +155,7 @@ const MusicPlayer = props => {
     }
 
     onPressStop();
-    clearInterval(countRef.current);
+    BackgroundTimer.clearInterval(countRef.current);
     setTimer(0);
 
     const newIndex = indexOfSong + 1;
@@ -169,7 +179,7 @@ const MusicPlayer = props => {
     }
 
     onPressStop();
-    clearInterval(countRef.current);
+    BackgroundTimer.clearInterval(countRef.current);
     setTimer(0);
 
     const newIndex = indexOfSong - 1;

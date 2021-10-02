@@ -17,6 +17,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -27,6 +28,7 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -156,6 +158,12 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
             Uri uri = Uri.parse(mysongs.get(position).toString());
             mediaPlayer = MediaPlayer.create(reactContext,uri);
             mediaPlayer.start();
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    sendEvent(reactContext, "Musicended", null);
+                }
+            });
 
             // return duration
            promise.resolve(mediaPlayer.getDuration());
@@ -287,6 +295,14 @@ public class MusicPlayerClass extends ReactContextBaseJavaModule {
                 Log.d("noisy","headpphones unplugged");
             }
         }
+    }
+
+    private void sendEvent(ReactContext reactContext,
+                           String eventName,
+                           @Nullable WritableMap params) {
+        reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
     }
 
 }
